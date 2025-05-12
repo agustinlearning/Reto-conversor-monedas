@@ -23,18 +23,48 @@ public class Principal {
                 .uri(URI.create(url))
                 .build();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        //mensaje de Bienvenida
+        System.out.println("Bienvenido al conversor de monedas :)");
 
         // Usando la libreria Gson
         Gson gson = new Gson();
         ConversorRate rates = gson.fromJson(response.body(), ConversorRate.class);
         System.out.println("Monedas disponibles: " + rates.conversion_rates().keySet());
 
-        // Consulta usuario
-        System.out.print("Moneda origen (ej: USD): ");
-        String monedaOrigen = scanner.nextLine().toUpperCase();
+        // Mapa de monedas comunes: clave = código, valor = nombre descriptivo
+        Map<String, String> monedasComunes = Map.of(
+                "DOP", "Peso Dominicano",
+                "ARS", "Peso Argentino",
+                "BOB", "Boliviano Boliviano",
+                "BRL", "Real Brasileño",
+                "CLP", "Peso Chileno",
+                "COP", "Peso Colombiano",
+                "USD", "Dólar Estadounidense"
+        );
+        System.out.println("\n=== Monedas disponibles ===");
+        monedasComunes.forEach((codigo, nombre) -> {
+            System.out.println(codigo + " - " + nombre);
+        });
+        System.out.println("==========================");
 
-        System.out.print("Moneda destino (ej: DOP): ");
-        String monedaDestino = scanner.nextLine().toUpperCase();
+        //consulta al usuario
+        String monedaOrigen;
+        do {
+            System.out.print("\nIngrese moneda origen (ej: USD): ");
+            monedaOrigen = scanner.nextLine().toUpperCase();
+            if (!monedasComunes.containsKey(monedaOrigen)) {
+                System.out.println("Código no válido. Use uno de la lista.");
+            }
+        } while (!monedasComunes.containsKey(monedaOrigen));
+
+        String monedaDestino;
+        do {
+            System.out.print("Ingrese moneda destino (ej: DOP): ");
+            monedaDestino = scanner.nextLine().toUpperCase();
+            if (!monedasComunes.containsKey(monedaDestino)) {
+                System.out.println("Código no válido. Use uno de la lista.");
+            }
+        } while (!monedasComunes.containsKey(monedaDestino));
 
         // Cambiando moneda
         double tasa = rates.conversion_rates().get(monedaDestino) / rates.conversion_rates().get(monedaOrigen);
@@ -43,7 +73,7 @@ public class Principal {
         // escribiendo la respuesta de la api para consultarla
 
         String json = response.body();
-        System.out.println("Respuesta de la API:\n" + json);
+//        System.out.println("Respuesta de la API:\n" + json);
 
         // Guardar el JSON en un archivo
         try (FileWriter file = new FileWriter("api_response.json")) {
